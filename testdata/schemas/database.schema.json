@@ -1,0 +1,87 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://example.com/database.schema.json",
+    "type": "object",
+    "properties": {
+        "logical": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "dbType"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "maxLength": 20
+                    },
+                    "dbType": {
+                        "type": "string",
+                        "default": "",
+                        "enum": [
+                            "MEMORY",
+                            "POSTGRES",
+                            "ORACLE"
+                        ]
+                    }
+                },
+                "dependencies": {
+                    "dbType": {
+                        "oneOf": [
+                            {
+                                "properties": {
+                                    "dbType": {
+                                        "enum": [
+                                            "MEMORY"
+                                        ]
+                                    },
+                                    "blocksize": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 65535,
+                                        "default": 0
+                                    }
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "dbType": {
+                                        "enum": [
+                                            "POSTGRES",
+                                            "ORACLE"
+                                        ]
+                                    },
+                                    "connection": {
+                                        "type": "string",
+                                        "default": "",
+                                        "maxLength": 250
+                                    },
+                                    "collationIndicator": {
+                                        "type": "string",
+                                        "enum": [
+                                            "7",
+                                            "8",
+                                            "9",
+                                            "0",
+                                            "a",
+                                            "z",
+                                            "A",
+                                            "Z"
+                                        ],
+                                        "default": "7",
+                                        "maxLength": 1
+                                    },
+                                    "enableWaitOnLock": {
+                                        "type": "boolean",
+                                        "default": true
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

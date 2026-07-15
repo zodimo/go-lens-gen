@@ -36,19 +36,25 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 		}
 	}
 
+	var primaryType string
 	if len(sch.Types) == 0 {
-		return
+		if len(sch.Properties) > 0 || sch.AdditionalProperties != nil || len(sch.PatternProperties) > 0 {
+			primaryType = "object"
+		} else if sch.Items != nil {
+			primaryType = "array"
+		} else {
+			return
+		}
+	} else {
+		if len(sch.Types) > 1 {
+			fmt.Printf("more the 1 type at path ??: %s, %v\n", currentPath, sch.Types)
+		}
+		primaryType = sch.Types[0]
 	}
-
-	if len(sch.Types) > 1 {
-		fmt.Printf("more the 1 type at path ??: %s, %v\n", currentPath, sch.Types)
-	}
-
-	primaryType := sch.Types[0]
 
 	switch primaryType {
 	case "object":
-		// 1. Handle standard, static properties
+		// Handle standard, static properties
 		for key, propSchema := range sch.Properties {
 			nextPath := key
 			if currentPath != "" {
@@ -57,19 +63,19 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 			WalkSchema(propSchema, nextPath, fields)
 		}
 
-		// 2. Handle Dynamic Pattern Properties
+		// Handle Dynamic Pattern Properties
 		if patSchema, ok := sch.AdditionalProperties.(*jsonschema.Schema); ok {
-			// 1. Identify the parent node's name
+			// Identify the parent node's name
 			parentName := "root"
 			if currentPath != "" {
 				segments := strings.Split(currentPath, ".")
 				parentName = segments[len(segments)-1]
 			}
 
-			// 2. Count existing keys to prevent collisions if the schema repeats parent names
+			// Count existing keys to prevent collisions if the schema repeats parent names
 			dynamicDepth := strings.Count(currentPath, "<DYNAMIC_KEY")
 
-			// 3. Construct the semantic placeholder (e.g., <DYNAMIC_KEY_users_0>)
+			// Construct the semantic placeholder (e.g., <DYNAMIC_KEY_users_0>)
 			placeholder := fmt.Sprintf("<DYNAMIC_KEY_%s_%d>", parentName, dynamicDepth)
 
 			nextPath := currentPath + "." + placeholder
@@ -85,22 +91,15 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 
 		}
 
-		//3. dependencies
+		//dependencies
 
 		for depKey, depValue := range sch.Dependencies {
-			nextPath := depKey
-			if currentPath != "" {
-				nextPath = currentPath + "." + depKey
-			}
 			fmt.Printf("key:%s, depValue: %T\n", depKey, depValue)
 			if depSchema, ok := depValue.(*jsonschema.Schema); ok {
-				WalkSchema(depSchema, nextPath, fields)
+				// Schema dependencies define additional properties at the SAME
+				// object level (siblings), not as children of depKey.
+				WalkSchema(depSchema, currentPath, fields)
 			}
-
-			// if depSchema, ok := depValue.(*jsonschema.); ok {
-			// 	walkSchema(depSchema, nextPath, fields)
-			// }
-
 		}
 
 	case "array":

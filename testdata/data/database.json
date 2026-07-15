@@ -1,0 +1,11 @@
+{
+    "logical": {
+        "default": {
+            "dbType": "ORACLE",
+            "name": "default",
+            "connection": "//",
+            "enableWaitOnLock": true,
+            "collationIndicator": "7"
+        }
+    }
+}

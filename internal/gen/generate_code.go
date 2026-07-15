@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"text/template"
+
+	"github.com/zodimo/go-lens-gen/internal/templates"
 )
 
 func (g *Generator) GenerateCode(rawFields map[string]LensField, outputWriter io.Writer, pkgName string, structName string) (n int64, err error) {
@@ -36,14 +37,7 @@ func (g *Generator) GenerateCode(rawFields map[string]LensField, outputWriter io
 		IsDynamic:   isDynamic,
 	}
 
-	// Parse and execute
-	var tmpl *template.Template
-	tmpl, err = template.New("lenses").Parse(lensTemplate)
-	if err != nil {
-		err = fmt.Errorf("template parse error: %w", err)
-		g.options.logger.Error("template parse error", "error", err)
-		return
-	}
+	tmpl := templates.Templates
 
 	var buf bytes.Buffer
 	if err = tmpl.Execute(&buf, ctx); err != nil { // Pass 'ctx' instead of 'templateData'

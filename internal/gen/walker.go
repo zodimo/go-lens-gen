@@ -1,7 +1,6 @@
 package gen
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -14,23 +13,30 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 		return
 	}
 
+	if sch.Ref != nil {
+		if sch.Ref != sch {
+			WalkSchema(sch.Ref, currentPath, fields)
+		}
+		return
+	}
+
+	if len(sch.OneOf) > 0 {
+		for _, sub := range sch.OneOf {
+			WalkSchema(sub, currentPath, fields)
+		}
+	}
+	if len(sch.AnyOf) > 0 {
+		for _, sub := range sch.AnyOf {
+			WalkSchema(sub, currentPath, fields)
+		}
+	}
+	if len(sch.AllOf) > 0 {
+		for _, sub := range sch.AllOf {
+			WalkSchema(sub, currentPath, fields)
+		}
+	}
+
 	if len(sch.Types) == 0 {
-		jsonString, _ := json.MarshalIndent(sch, "", "  ")
-		_ = jsonString
-
-		if len(sch.OneOf) > 0 {
-			fmt.Printf("OneOf at: %s\n", currentPath)
-			//TODO implement
-		}
-		if len(sch.AnyOf) > 0 {
-			fmt.Printf("AnyOf at: %s\n", currentPath)
-			//TODO implement
-		}
-		if len(sch.AllOf) > 0 {
-			fmt.Printf("AllOf at: %s\n", currentPath)
-			//TODO implement
-		}
-
 		return
 	}
 

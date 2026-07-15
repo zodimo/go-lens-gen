@@ -19,6 +19,7 @@ func main() {
 	lensName := flag.String("struct", "", "The name of the generated struct")
 	schemaPath := flag.String("schema", "", "Path or URL to the input JSON schema")
 	outPath := flag.String("out", "", "Output path for the generated code")
+	autoSanitize := flag.Bool("auto-sanitize", false, "Automatically sanitize package and struct names if invalid")
 
 	logger := slog.Default()
 
@@ -37,6 +38,29 @@ func main() {
 	if *outPath == "" {
 		// should we fail or write to stdout ?
 		log.Fatalf("out is required")
+	}
+
+	if *autoSanitize {
+		sanitizedPkg := gen.SanitizePackageName(*pkgName)
+		sanitizedStruct := gen.SanitizeStructName(*lensName)
+
+		if sanitizedPkg != *pkgName {
+			logger.Info(fmt.Sprintf("Sanitized package name from '%s' to '%s'", *pkgName, sanitizedPkg))
+			*pkgName = sanitizedPkg
+		}
+		if sanitizedStruct != *lensName {
+			logger.Info(fmt.Sprintf("Sanitized struct name from '%s' to '%s'", *lensName, sanitizedStruct))
+			*lensName = sanitizedStruct
+		}
+	} else {
+		if err := gen.ValidatePackageName(*pkgName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
+		if err := gen.ValidateStructName(*lensName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			os.Exit(1)
+		}
 	}
 
 	logger.Info("Starting Lens Generator...")

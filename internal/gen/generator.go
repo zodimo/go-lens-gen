@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"path/filepath"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 )
@@ -54,6 +55,10 @@ func NewGenerator(
 	// Compile the JSON Schema using the library
 	// This automatically validates the schema and resolves any $ref pointers internally
 	compiler := jsonschema.NewCompiler()
+
+	// Register custom loader for resolving external references
+	baseDir := filepath.Dir(schemaPath)
+	compiler.LoadURL = NewLocalReferenceLoader(baseDir)
 
 	sch, err := compiler.Compile(schemaPath)
 	if err != nil {

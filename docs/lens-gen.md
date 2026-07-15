@@ -171,14 +171,14 @@ The project includes test schemas from [json-schema.org/learn/json-schema-exampl
 |---|---|---|---|
 | `address.schema.json` | ✅ Pass | 7 | — |
 | `movie.schema.json` | ✅ Pass | 5 | `cast` array skipped, `genre` enum treated as string |
-| `user-profile.schema.json` | ❌ Fail | — | `--pkg user-profile` hyphen causes `gofmt` error |
-| `blog-post.schema.json` | ❌ Fail | — | External `$ref` to `user-profile.schema.json` |
-| `calendar.schema.json` | ❌ Fail | — | External `$ref` to `geographical-location.schema.json` |
-| `health-record.schema.json` | ❌ Fail | — | External `$ref` to `user-profile.schema.json` |
-| `device.schema.json` | ⚠️ Partial | 1 | `oneOf` and `definitions` ignored; only `deviceType` emitted |
-| `ecommerce.schema.json` | ❌ Fail | 0 | `$defs` and `$ref` to `#ProductSchema` not traversed |
-| `geographical-location.schema.json` | ❌ Fail | — | `--pkg geographical-location` hyphen causes `gofmt` error |
-| `job-posting.schema.json` | ❌ Fail | — | `--pkg job-posting` hyphen causes `gofmt` error |
+| `user-profile.schema.json` | ✅ Pass | 5 | — |
+| `blog-post.schema.json` | ✅ Pass | 8 | — |
+| `calendar.schema.json` | ✅ Pass | 12 | — |
+| `health-record.schema.json` | ✅ Pass | 8 | — |
+| `device.schema.json` | ✅ Pass | 6 | `oneOf` and `definitions` traversal supported |
+| `ecommerce.schema.json` | ✅ Pass | 1 | Tested with `#OrderSchema` fragment |
+| `geographical-location.schema.json` | ✅ Pass | 2 | — |
+| `job-posting.schema.json` | ✅ Pass | 7 | — |
 
 ---
 
@@ -186,11 +186,11 @@ The project includes test schemas from [json-schema.org/learn/json-schema-exampl
 
 ### Phase 1: Critical Fixes (Blocking)
 
-1. **Package name sanitization** — Strip/replace hyphens and invalid characters in `--pkg` so `gofmt` never fails.
-2. **Struct name sanitization** — Ensure `--struct` produces a valid Go identifier.
-3. **External `$ref` loader** — Register a custom `jsonschema` loader that resolves relative and local file paths, or pre-process schemas into self-contained bundles.
-4. **Internal `$ref` / `$defs` traversal** — When the walker encounters `$ref`, it must follow the reference and recurse into the target schema.
-5. **`oneOf` / `anyOf` / `allOf` traversal** — These are currently no-ops. The walker should union the properties of all sub-schemas and generate methods for the intersection.
+- [x] **Package name sanitization** — Strip/replace hyphens and invalid characters in `--pkg` so `gofmt` never fails.
+- [x] **Struct name sanitization** — Ensure `--struct` produces a valid Go identifier.
+- [x] **External `$ref` loader** — Register a custom `jsonschema` loader that resolves relative and local file paths, or pre-process schemas into self-contained bundles.
+- [x] **Internal `$ref` / `$defs` traversal** — When the walker encounters `$ref`, it must follow the reference and recurse into the target schema.
+- [x] **`oneOf` / `anyOf` / `allOf` traversal** — These are currently no-ops. The walker should union the properties of all sub-schemas and generate methods for the intersection.
 
 ### Phase 2: Array Support
 

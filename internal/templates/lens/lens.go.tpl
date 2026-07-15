@@ -1,4 +1,5 @@
-{{template "header" .}}
+{{ template "header" . }}
+
 // {{ .StructName }} provides type-safe surgical access to the JSON payload
 type {{ .StructName }} struct {
 	raw []byte

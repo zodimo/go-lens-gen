@@ -53,4 +53,35 @@ func (l *{{ $.StructName }}) Set{{ .MethodName }}({{ if .IsDynamic }}{{ .MethodA
 	return err
 }
 {{ end }}
+
+{{ range .Arrays }}
+// -----------------------------------------------------------------------------
+// Array Path: {{ .OriginalPath }}
+// -----------------------------------------------------------------------------
+
+// Len{{ .MethodName }} returns the length of the array.
+func (l *{{ $.StructName }}) Len{{ .MethodName }}({{ .MethodArgs }}) int64 {
+	{{- if .IsDynamic }}
+	path := fmt.Sprintf("{{ .FmtPath }}.#", {{ .ArgsList }})
+	{{- else }}
+	path := "{{ .OriginalPath }}.#"
+	{{- end }}
+	return gjson.GetBytes(l.raw, path).Int()
+}
+
+{{- if .GenerateForEach }}
+
+// ForEach{{ .MethodName }} iterates over the elements of the array.
+func (l *{{ $.StructName }}) ForEach{{ .MethodName }}({{ if .IsDynamic }}{{ .MethodArgs }}, {{ end }}callback func(index int, value {{ .LeafGoType }}) bool) {
+	{{- if .IsDynamic }}
+	path := fmt.Sprintf("{{ .FmtPath }}", {{ .ArgsList }})
+	{{- else }}
+	path := "{{ .OriginalPath }}"
+	{{- end }}
+	gjson.GetBytes(l.raw, path).ForEach(func(key, value gjson.Result) bool {
+		return callback(int(key.Int()), value.{{ .LeafGjsonMethod }}())
+	})
+}
+{{- end }}
+{{ end }}
 `

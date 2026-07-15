@@ -121,6 +121,8 @@ The following JSON Schema features are **currently supported**:
 | `type: integer` | ✅ Supported | Maps to Go `int64` |
 | `type: number` | ✅ Supported | Maps to Go `float64` |
 | `type: boolean` | ✅ Supported | Maps to Go `bool` |
+| `type: array` | ✅ Supported | Generates `GetAt`, `SetAt`, `Len`, and `ForEach` |
+| `items` | ✅ Supported | Defines the type of array items |
 | `properties` | ✅ Supported | Static, nested object properties |
 | `$id` | ✅ Supported | Schema identification |
 | `$schema` | ✅ Supported | Draft declaration (2020-12) |
@@ -131,7 +133,7 @@ The following JSON Schema features are **currently supported**:
 |---|---|---|
 | `additionalProperties` | ⚠️ Partial | Walked as dynamic maps, but argument naming may collide |
 | `patternProperties` | ❌ Not supported | Treated as opaque; no methods generated |
-| `type: array` | ❌ Not supported | Array items are silently skipped; no index-based methods |
+| `items` (boolean) | ❌ Not supported | Boolean `items: true/false` are silently skipped |
 | `$ref` (external URL) | ❌ Not supported | Fails at compile time with "no Loader found" |
 | `$ref` (internal `#anchor`) | ❌ Not supported | Resolves but walker doesn't traverse; 0 fields |
 | `oneOf` | ❌ Not supported | Prints to stdout but generates no code |
@@ -170,13 +172,13 @@ The project includes test schemas from [json-schema.org/learn/json-schema-exampl
 | Schema | Status | Paths Found | Issue |
 |---|---|---|---|
 | `address.schema.json` | ✅ Pass | 7 | — |
-| `movie.schema.json` | ✅ Pass | 5 | `cast` array skipped, `genre` enum treated as string |
-| `user-profile.schema.json` | ✅ Pass | 5 | — |
-| `blog-post.schema.json` | ✅ Pass | 8 | — |
+| `movie.schema.json` | ✅ Pass | 6 | `genre` enum treated as string |
+| `user-profile.schema.json` | ✅ Pass | 6 | — |
+| `blog-post.schema.json` | ✅ Pass | 10 | — |
 | `calendar.schema.json` | ✅ Pass | 12 | — |
-| `health-record.schema.json` | ✅ Pass | 8 | — |
+| `health-record.schema.json` | ✅ Pass | 12 | — |
 | `device.schema.json` | ✅ Pass | 6 | `oneOf` and `definitions` traversal supported |
-| `ecommerce.schema.json` | ✅ Pass | 1 | Tested with `#OrderSchema` fragment |
+| `ecommerce.schema.json` | ✅ Pass | 3 | Tested with `#OrderSchema` fragment |
 | `geographical-location.schema.json` | ✅ Pass | 2 | — |
 | `job-posting.schema.json` | ✅ Pass | 7 | — |
 
@@ -194,9 +196,9 @@ The project includes test schemas from [json-schema.org/learn/json-schema-exampl
 
 ### Phase 2: Array Support
 
-6. **Array index methods** — For `items`, generate `GetFieldAt(index int)` and `SetFieldAt(index int, value T)` using `gjson` array syntax (e.g., `cast.0`, `cast.1`).
-7. **Array iteration helpers** — Optionally generate `ForEachField(callback)` wrappers around `gjson.ForEach`.
-8. **Tuple arrays** — Support `prefixItems` (Draft 2020-12) where each index has a different type.
+- [x] 6. **Array index methods** — For `items`, generate `GetFieldAt(index int)` and `SetFieldAt(index int, value T)` using `gjson` array syntax (e.g., `cast.0`, `cast.1`).
+- [x] 7. **Array iteration helpers** — Optionally generate `ForEachField(callback)` wrappers around `gjson.ForEach`.
+- [ ] 8. **Tuple arrays** — Support `prefixItems` (Draft 2020-12) where each index has a different type.
 
    > **Note on implementation approach:** We explored two designs for tuple accessors:
    > - **Design A (index methods):** `GetFieldAt0() string`, `GetFieldAt1() int64` — works today, zero dependencies

@@ -40,7 +40,7 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 	if len(sch.Types) == 0 {
 		if len(sch.Properties) > 0 || sch.AdditionalProperties != nil || len(sch.PatternProperties) > 0 {
 			primaryType = "object"
-		} else if sch.Items != nil {
+		} else if sch.Items != nil || sch.Items2020 != nil || len(sch.PrefixItems) > 0 {
 			primaryType = "array"
 		} else {
 			return
@@ -105,10 +105,19 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 	case "array":
 		// For arrays, gjson uses '#' to indicate an array element or iteration.
 		// We use <INDEX> as our placeholder.
-		if sch.Items != nil {
+		if len(sch.PrefixItems) > 0 {
+			fmt.Println("Tuple arrays not yet supported \u2014 see roadmap")
+		} else if itemsArr, ok := sch.Items.([]*jsonschema.Schema); ok && len(itemsArr) > 0 {
+			fmt.Println("Tuple arrays not yet supported \u2014 see roadmap")
+		} else if sch.Items2020 != nil {
+			nextPath := currentPath + ".<INDEX>"
+			WalkSchema(sch.Items2020, nextPath, fields)
+		} else if sch.Items != nil {
 			if itemSchema, ok := sch.Items.(*jsonschema.Schema); ok {
 				nextPath := currentPath + ".<INDEX>"
 				WalkSchema(itemSchema, nextPath, fields)
+			} else if b, ok := sch.Items.(bool); ok {
+				fmt.Printf("DEBUG: skipping array with boolean items (%v) at path: %s\n", b, currentPath)
 			}
 		}
 
@@ -123,10 +132,16 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 			goType = "bool"
 		}
 
+		var arrayBasePath string
+		if idx := strings.LastIndex(currentPath, ".<INDEX>"); idx != -1 {
+			arrayBasePath = currentPath[:idx]
+		}
+
 		fields[currentPath] = LensField{
-			Path:      currentPath,
-			GoType:    goType,
-			IsDynamic: strings.Contains(currentPath, "<"),
+			Path:          currentPath,
+			GoType:        goType,
+			IsDynamic:     strings.Contains(currentPath, "<"),
+			ArrayBasePath: arrayBasePath,
 		}
 	default:
 		panic(fmt.Sprintf("unhandled type: %s", primaryType))

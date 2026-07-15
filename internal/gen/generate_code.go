@@ -10,12 +10,18 @@ import (
 
 func (g *Generator) GenerateCode(rawFields map[string]LensField, outputWriter io.Writer, pkgName string, structName string) (n int64, err error) {
 	// Pre-process the data
-	templateData := prepareTemplateData(rawFields)
+	templateData, templateArrays := prepareTemplateData(rawFields)
 
 	var isDynamic bool
 
 	for _, templateField := range templateData {
 		if templateField.IsDynamic {
+			isDynamic = true
+			break
+		}
+	}
+	for _, templateArray := range templateArrays {
+		if templateArray.IsDynamic {
 			isDynamic = true
 			break
 		}
@@ -26,6 +32,7 @@ func (g *Generator) GenerateCode(rawFields map[string]LensField, outputWriter io
 		PackageName: pkgName,
 		StructName:  structName,
 		Fields:      templateData,
+		Arrays:      templateArrays,
 		IsDynamic:   isDynamic,
 	}
 

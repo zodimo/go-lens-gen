@@ -122,7 +122,7 @@ func main() {
 	}
 	if n == 0 {
 		// something went wrong...
-		log.Fatalf("Failed to Generate: %v", err)
+		log.Fatalf("Failed to Generate, zero bytes written: %v", err)
 	}
 
 	fmt.Printf("Successfully generated lenses in %s\n", *outPath)

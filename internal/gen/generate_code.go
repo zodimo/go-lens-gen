@@ -40,7 +40,8 @@ func (g *Generator) GenerateCode(rawFields map[string]LensField, outputWriter io
 	tmpl := templates.Templates
 
 	var buf bytes.Buffer
-	if err = tmpl.Execute(&buf, ctx); err != nil { // Pass 'ctx' instead of 'templateData'
+	// Pass 'ctx' instead of 'templateData'
+	if err = tmpl.Execute(&buf, ctx); err != nil {
 		err = fmt.Errorf("template execution error: %w", err)
 		g.options.logger.Error("template execution error", "error", err)
 		return

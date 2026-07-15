@@ -123,13 +123,16 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 
 	// 3. Handle Primitive Leaf Nodes (This is what we actually generate getters/setters for)
 	case "string", "integer", "number", "boolean":
-		goType := "string"
-		if primaryType == "integer" {
+		var goType string
+		switch primaryType {
+		case "integer":
 			goType = "int64"
-		} else if primaryType == "number" {
+		case "number":
 			goType = "float64"
-		} else if primaryType == "boolean" {
+		case "boolean":
 			goType = "bool"
+		default:
+			goType = "string"
 		}
 
 		var arrayBasePath string

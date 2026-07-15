@@ -198,6 +198,14 @@ The project includes test schemas from [json-schema.org/learn/json-schema-exampl
 7. **Array iteration helpers** — Optionally generate `ForEachField(callback)` wrappers around `gjson.ForEach`.
 8. **Tuple arrays** — Support `prefixItems` (Draft 2020-12) where each index has a different type.
 
+   > **Note on implementation approach:** We explored two designs for tuple accessors:
+   > - **Design A (index methods):** `GetFieldAt0() string`, `GetFieldAt1() int64` — works today, zero dependencies
+   > - **Design B (generic typed keys):** `GetItem[T any](key ItemKey[T]) T` — requires Go 1.27+ generic methods
+   >
+   > Go 1.27 (expected August 2026) adds generic methods via [proposal #77273](https://github.com/golang/go/issues/77273). This unlocks the typed-key pattern, which scales better for large tuples and provides cleaner IDE autocomplete. However, generic methods cannot satisfy interfaces, and tooling (linters, formatters, gopls) may lag 1–2 release cycles behind.
+   >
+   > **Decision:** Defer tuple array implementation until Go 1.27 is stable **and** the core tooling chain fully supports generic methods (target: Go 1.28). In the interim, tuple schemas will fall back to homogeneous array behavior or emit a warning. See the `tuple-arrays` OpenSpec spec for the full design analysis.
+
 ### Phase 3: Advanced Types & Validation
 
 9. **`enum` support** — Generate typed constants and custom string/int types with `IsValid()` methods.

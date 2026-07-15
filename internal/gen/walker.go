@@ -17,22 +17,18 @@ func WalkSchema(sch *jsonschema.Schema, currentPath string, fields map[string]Le
 	if len(sch.Types) == 0 {
 		jsonString, _ := json.MarshalIndent(sch, "", "  ")
 		_ = jsonString
-		// jsonString := ""
-		// sch.OneOf
-		// fmt.Printf("Nothing here.. :%s\n%s", currentPath, string(jsonString))
 
 		if len(sch.OneOf) > 0 {
 			fmt.Printf("OneOf at: %s\n", currentPath)
+			//TODO implement
 		}
 		if len(sch.AnyOf) > 0 {
 			fmt.Printf("AnyOf at: %s\n", currentPath)
-			// strayegy - flatten
-
+			//TODO implement
 		}
 		if len(sch.AllOf) > 0 {
 			fmt.Printf("AllOf at: %s\n", currentPath)
-			// strayegy - flatten
-
+			//TODO implement
 		}
 
 		return

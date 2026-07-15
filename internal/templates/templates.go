@@ -17,4 +17,9 @@ func init() {
 	if err != nil {
 		panic(fmt.Errorf("Could not load the templates: %w", err))
 	}
+	// lens.go.tpl is the main template; it references the "header" template.
+	Templates = Templates.Lookup("lens.go.tpl")
+	if Templates == nil {
+		panic("main template lens.go.tpl not found")
+	}
 }
